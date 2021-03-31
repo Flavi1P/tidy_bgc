@@ -1,0 +1,24 @@
+Package: tidybgc
+Title: Open BGC-Argo files
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Flavien",
+           family = "Petit",
+           role = c("aut", "cre"),
+           email = "flavien.petit@obs-vlfr.fr")
+Description: This package provides some usefull function to open BGC-Argo files.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Imports: 
+    ncdf4,
+    lubridate,
+    tidyr,
+    dplyr,
+    magrittr

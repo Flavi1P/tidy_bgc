@@ -20,6 +20,7 @@ library(ncdf4)
 library(dplyr)
 library(tidyr)
 library(magrittr)
+library(stringr)
 ```
 
 # Extract the date from the profile
@@ -54,11 +55,45 @@ get_date <- function(nc){
 date <- get_date(nc)
 ```
 
+
+#Get QC from SD or BD
+
+```{r}
+
+get_qc <- function(vars, nc_path){
+  nc <- nc_open(nc_path)
+  qc_table <- data.frame('vars' = character(),
+                         'qc'= numeric())
+  
+  for(i in vars){
+    t <- ncvar_get(nc, paste(i, 'QC', sep = '_'))
+  if(grepl('/SD[0-9]', nc_path)){
+    qc_vec <- unlist(str_split(t, pattern = ''))
+  }
+  else if(grepl('/BD[0-9]', nc_path)){
+    qc_vec <- unlist(str_split(t[[3]], pattern = ''))
+  }
+  qc_vec <- as.numeric(gsub(' ', NA, qc_vec))
+  depth <- seq(1:length(qc_vec))
+  qc_var <- data.frame('vars' = paste(i, '_qc'), 'qc' = qc_vec, 'depth' = depth)
+  qc_table <- bind_rows(qc_table, qc_var)
+  }
+  
+  qc_table <- pivot_wider(qc_table, names_from = 'vars', values_from = 'qc')
+  nc_close(nc)
+  return(qc_table)
+}
+
+my_qc_table <- get_qc(c('CHLA', 'CHLA_ADJUSTED'), nc_path)
+
+```
+
 #Extract data from SD profiles
 
 ```{r}
 extract_sd <- function(nc_path, vars){
   nc <- nc_open(nc_path)
+  float_name <- str_extract(nc_path, '[0-9]{6,}')
   long_df <- data.frame('depth' = numeric(), 'variable' = character(), value = numeric())
   for(i in vars){
     var <- ncvar_get(nc, i)
@@ -72,12 +107,18 @@ extract_sd <- function(nc_path, vars){
   final_df <- long_df %>% pivot_wider(names_from = 'variable', values_from = 'value') %>% 
     mutate('date' = date,
            'lon' = lon,
-           'lat' = lat)
+           'lat' = lat,
+           'float' = float_name)
+  qc_df <- get_qc(vars, nc_path)
+  final_df <- left_join(final_df, qc_df, by = 'depth') %>% janitor::clean_names() %>% 
+    dplyr::select(float, date, lon, lat, depth, everything())
   return(final_df)
 }
 
 my_clean_table <- extract_sd(nc_path, c("CHLA_ADJUSTED", "CDOM"))
 head(my_clean_table)
 ```
+
+
 
 

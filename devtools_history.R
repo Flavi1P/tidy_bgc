@@ -4,4 +4,6 @@ usethis::use_package("ncdf4")
 usethis::use_package('tidyr')
 usethis::use_package('dplyr')
 usethis::use_package('magrittr')
+usethis::use_package('stringr')
+usethis::use_package('janitor')
 

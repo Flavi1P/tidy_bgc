@@ -2,8 +2,10 @@
 
 export(extract_sd)
 export(get_date)
+export(get_qc)
 import(dplyr)
 import(magrittr)
 import(ncdf4)
+import(stringr)
 importFrom(lubridate,date)
 importFrom(tidyr,pivot_wider)
